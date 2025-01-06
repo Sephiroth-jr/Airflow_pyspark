@@ -1,0 +1,5 @@
+scripts_teste/
+logs/
+output/
+export/
+airflow.cfg
