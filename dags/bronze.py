@@ -26,7 +26,7 @@ def process_bronze_layer(input_path: str, output_path: str):
             regexp_replace(regexp_replace(col("Arrecadado até 02/02/2024"), r"\.", ""), ",", ".").cast("float")
         ).drop("Arrecadado até 02/02/2024")
 
-        # Verificar e remover colunas desnecessárias
+        # Verificar e remover colunas desnecessáriass
         if "_c3" in receitas_clean.columns:
             receitas_clean = receitas_clean.drop("_c3")
         
