@@ -2,64 +2,71 @@ version: "3.8"
 
 services:
   postgres:
-    image: postgres:15
+    image: postgres:13
+    container_name: airflow_pyspark-postgres
     environment:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
   airflow-webserver:
+    image: apache/airflow:2.10.0-python3.8
+    container_name: airflow_pyspark-airflow-webserver
     build:
       context: .
       dockerfile: Dockerfile
     environment:
-      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-      AIRFLOW__CORE__EXECUTOR: "LocalExecutor"
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://airflow:airflow@postgres:5432/airflow"
-      AIRFLOW__UID: "1000"  # UID ajustado
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: h3GkX8aJ8iUJ28Q7t87YKg==
+      AIRFLOW__CORE__INTERNAL_API_SECRET_KEY: h3GkX8aJ8iUJ28Q7t87YKg==
+    depends_on:
+      - postgres
     ports:
       - "8080:8080"
-    depends_on:
-      - postgres
+    command: >
+      bash -c "
+      airflow db upgrade &&
+      airflow users create --username airflow --password airflow --firstname Edivan --lastname Junior --role Admin --email ejgjeidvan@gmail.com &&
+      airflow webserver
+      "
     volumes:
       - ./dags:/opt/airflow/dags
-      - ./data:/opt/airflow/data
-      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
       - ./validation:/opt/airflow/validation
-      - ./export:/opt/airflow/export
+      - ./data:/opt/airflow/data
       - ./output:/opt/airflow/output
       - ./backups:/opt/airflow/backups
-      - ./plugins:/opt/airflow/plugins
-    command: >
-      bash -c " airflow db init && airflow users create --username airflow --password airflow --firstname Edivan --lastname Junior --role Admin --email ejgjedivan@gmail.com && airflow webserver"
 
   airflow-scheduler:
+    image: apache/airflow:2.10.0-python3.8
+    container_name: airflow_pyspark-airflow-scheduler
     build:
       context: .
       dockerfile: Dockerfile
     environment:
-      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-      AIRFLOW__CORE__EXECUTOR: "LocalExecutor"
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: "postgresql+psycopg2://airflow:airflow@postgres:5432/airflow"
-      AIRFLOW__UID: "1000"  # UID ajustado
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__WEBSERVER__SECRET_KEY: h3GkX8aJ8iUJ28Q7t87YKg==
+      AIRFLOW__CORE__INTERNAL_API_SECRET_KEY: h3GkX8aJ8iUJ28Q7t87YKg==
     depends_on:
       - postgres
+    command: >
+      bash -c "
+      airflow db upgrade &&
+      airflow scheduler
+      "
     volumes:
       - ./dags:/opt/airflow/dags
-      - ./data:/opt/airflow/data
-      - ./logs:/opt/airflow/logs
+      - ./plugins:/opt/airflow/plugins
       - ./validation:/opt/airflow/validation
-      - ./export:/opt/airflow/export
+      - ./data:/opt/airflow/data
       - ./output:/opt/airflow/output
       - ./backups:/opt/airflow/backups
-      - ./plugins:/opt/airflow/plugins
-    command: >
-      bash -c " airflow db init && airflow scheduler"
 
 volumes:
   postgres_data:
-

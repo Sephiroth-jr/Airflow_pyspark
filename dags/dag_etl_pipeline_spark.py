@@ -1,6 +1,6 @@
 from airflow import DAG
 from airflow.operators.bash import BashOperator
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator  # Atualizado para evitar depreciação
 from datetime import datetime
 import os
 import shutil
@@ -32,7 +32,7 @@ default_args = {
 with DAG(
     dag_id='etl_pipeline',
     default_args=default_args,
-    schedule_interval='@daily',
+    schedule='@daily',  # Atualizado para evitar depreciação
     catchup=False,
 ) as dag:
 
@@ -64,14 +64,17 @@ with DAG(
         }
     )
 
+    # Tarefa de Validação
     validate_task = BashOperator(
-    task_id="validate_backup",
-    bash_command="python /opt/airflow/dags/validate_backup.py /tmp/test_backup"
+        task_id="validate_backup",
+        bash_command="python /opt/airflow/dags/validate_backup.py /opt/airflow/backups /opt/airflow/validation"  # Ajustado para incluir a pasta de validação como argumento
     )
 
+    # Tarefa de Exportação para PostgreSQL
     export_to_postgres_task = BashOperator(
         task_id="export_to_postgres",
         bash_command="python /opt/airflow/dags/export_to_postgres.py"
     )
+
     # Ordem de execução
     bronze_task >> silver_task >> gold_task >> backup_task >> validate_task >> export_to_postgres_task

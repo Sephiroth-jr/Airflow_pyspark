@@ -1,66 +1,32 @@
 import os
-import sys
-import zipfile
+import shutil
+from pathlib import Path
 
-def ensure_permissions(path):
+def validate_backup(backup_folder: str, validation_folder: str):
     """
-    Garante que o diretório e seus arquivos tenham permissões adequadas.
+    Valida os arquivos de backup e os move para a pasta de validação.
+
+    Args:
+        backup_folder (str): Caminho da pasta onde os backups estão armazenados.
+        validation_folder (str): Caminho da pasta onde backups validados serão armazenados.
     """
     try:
-        os.chmod(path, 0o777)
-        for root, dirs, files in os.walk(path):
-            for name in dirs:
-                os.chmod(os.path.join(root, name), 0o777)
-            for name in files:
-                os.chmod(os.path.join(root, name), 0o777)
-        print(f"Permissões ajustadas para: {path}")
-    except Exception as e:
-        print(f"Erro ao ajustar permissões: {e}")
+        # Criar a pasta de validação, se não existir
+        os.makedirs(validation_folder, exist_ok=True)
 
-def validate_backup(backup_path):
-    """
-    Valida o conteúdo do backup.
-    """
-    if not os.path.exists(backup_path):
-        print(f"Backup não encontrado no caminho especificado: {backup_path}")
-        return
+        # Listar arquivos na pasta de backup
+        for file_name in os.listdir(backup_folder):
+            if file_name.endswith(".zip"):
+                src_path = os.path.join(backup_folder, file_name)
+                dest_path = os.path.join(validation_folder, file_name)
 
-    # Descompactar o arquivo de backup
-    try:
-        latest_backup = max(
-            [os.path.join(backup_path, f) for f in os.listdir(backup_path) if f.endswith(".zip")],
-            key=os.path.getctime
-        )
-        print(f"Validando o backup mais recente: {latest_backup}")
-
-        extract_path = "/tmp/test_backup"
-        if not os.path.exists(extract_path):
-            os.makedirs(extract_path)
-
-        # Garantir permissões adequadas no diretório de extração
-        ensure_permissions(extract_path)
-
-        with zipfile.ZipFile(latest_backup, 'r') as zip_ref:
-            zip_ref.extractall(extract_path)
-
-        # Listar os arquivos extraídos
-        print("Arquivos encontrados no backup:")
-        for root, dirs, files in os.walk(extract_path):
-            for name in dirs:
-                print(f" - {os.path.join(root, name)}")
-            for name in files:
-                print(f" - {os.path.join(root, name)}")
-
-        print("Validação do backup concluída com sucesso!")
+                # Mover arquivo validado para a pasta de validação
+                shutil.move(src_path, dest_path)
+                print(f"Arquivo validado e movido: {file_name}")
 
     except Exception as e:
-        print(f"Erro ao validar o backup: {e}")
+        print(f"Erro durante a validação de backup: {e}")
 
-
+# Teste do script
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Uso: python validate_backup.py <caminho_dos_backups>")
-        sys.exit(1)
-
-    backup_path = sys.argv[1]
-    validate_backup(backup_path)
+    validate_backup("/opt/airflow/backups", "/opt/airflow/validation")
