@@ -18,10 +18,12 @@ Este projeto implementa um pipeline de ETL (Extract, Transform, Load) utilizando
 ```
 projeto_etl/
 ├── backups/       # Backups automatizados
+├── assets/        # Imagens do projeto
 ├── dags/          # Scripts do pipeline ETL
 ├── data/          # Dados de entrada
 ├── logs/          # Logs gerados pelo Airflow
 ├── output/        # Resultados do processamento ETL
+├── validation/    # Backups pós validação
 ├── Dockerfile     # Configuração do contêiner
 ├── Airflow.cfg    # Configuração refinada do airflow 
 ├── docker-compose.yaml
@@ -107,7 +109,7 @@ projeto_etl/
 
 ![Dashboard de Receita e Despesa](assets/BI - Orçamento.png)
 
-O gráfico acima mostra a relação entre receita e despesa por categoria de fonte de recurso, destacando os principais numeros extraídos do relatório.
+A imagem acima mostra a relação entre receita e despesa por categoria de fonte de recurso, destacando os principais numeros extraídos do relatório.
 
 ---
 
