@@ -23,6 +23,7 @@ projeto_etl/
 ├── logs/          # Logs gerados pelo Airflow
 ├── output/        # Resultados do processamento ETL
 ├── Dockerfile     # Configuração do contêiner
+├── Airflow.cfg    # Configuração refinada do airflow 
 ├── docker-compose.yaml
 ├── requirements.txt
 └── README.md
@@ -83,12 +84,34 @@ projeto_etl/
 - Compacta os resultados do pipeline e cria arquivos de backup no diretório `backups/`.
 
 ### 5. Validação
-- Verifica a integridade dos arquivos de backup.
+- Verifica a integridade dos arquivos de backup e migra os arquivos para a pasta de validation.
+
+### 6. Exportação para o PostgresSQL
+- Verifica os dados da camada gold e faz a importação da tabela de receitas e despesas para o postgres automaticamente após execução da dag.
+
+### 7. Conexão com o Microsoft Power BI via conexão padrão PostgresSQL
+- Foi feita a conexão usando o Power BI para criação do dashboard. 
+
+---
+
+1. Certifique-se de que os arquivos gerados pela camada Gold estão disponíveis em `/opt/airflow/output/gold`.
+2. Abra o Power BI e clique em "Obter Dados".
+3. Selecione "Arquivos CSV" ou configure a conexão com o PostgreSQL usando as credenciais:
+   - Host: localhost
+   - Porta: 5432
+   - Banco de Dados: airflow
+   - Senha: Airflow
+4. Carregue os dados e visualize os dashboards predefinidos.
+
+## Relatório Power BI - Análise de Receita e Despesa
+
+![Dashboard de Receita e Despesa](assets/BI - Orçamento.png)
+
+O gráfico acima mostra a relação entre receita e despesa por categoria de fonte de recurso, destacando os principais numeros extraídos do relatório.
 
 ---
 
 ## 🔍 Comandos Úteis
-
 ### Gerenciamento do Projeto
 
 - **Subir contêineres**:
